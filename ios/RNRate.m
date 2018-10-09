@@ -14,12 +14,19 @@ RCT_EXPORT_METHOD(rate: (NSDictionary *)options : (RCTResponseSenderBlock) callb
     NSString *suffix = @"?action=write-review";
 
     NSString *url = [NSString stringWithFormat:@"%@%@%@", AppleNativePrefix, AppleAppID, suffix];
+    double delayInSeconds = 5.0;
 
     if (preferInApp) {
         if ([SKStoreReviewController class]) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 NSUInteger windowCount = [[[UIApplication sharedApplication] windows] count];
-                [SKStoreReviewController requestReview];
+                
+                dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
+                dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                    
+                    [SKStoreReviewController requestReview];
+                });
+
 
                 float checkTime = 0.1;
                 int iterations = (int)(inAppDelay / checkTime);
@@ -31,8 +38,8 @@ RCT_EXPORT_METHOD(rate: (NSDictionary *)options : (RCTResponseSenderBlock) callb
             callback(@[[NSNumber numberWithBool:true]]);
         }
     } else {
-        [self openAppStoreAndRate:url];
-        callback(@[[NSNumber numberWithBool:true]]);
+        //[self openAppStoreAndRate:url];
+        //callback(@[[NSNumber numberWithBool:true]]);
     }
 }
 
@@ -52,16 +59,20 @@ RCT_EXPORT_METHOD(rate: (NSDictionary *)options : (RCTResponseSenderBlock) callb
                 if (openAppStoreIfInAppFails) {
                   [self openAppStoreAndRate:url];
                 }
-                callback(@[[NSNumber numberWithBool:true]]);
+                callback(@[[NSNumber numberWithBool:false]]);
             }
         }
     });
 }
 
 - (void) openAppStoreAndRate : (NSString *) url {
-  dispatch_async(dispatch_get_main_queue(), ^{
-    [[UIApplication sharedApplication] openURL: [NSURL URLWithString:url]];
-  });
+    double delayInSeconds = 5.0;
+
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        [[UIApplication sharedApplication] openURL: [NSURL URLWithString:url]];
+    });
+
 }
 
 
